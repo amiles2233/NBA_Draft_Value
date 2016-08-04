@@ -12,7 +12,8 @@ dat <- left_join(draft, season, by="Player") %>%
     group_by(Player) %>%
     mutate(ws_sum=cumsum(WS)) %>%
     ungroup() %>%
-    mutate(lt_season=Season-Draft)
+    mutate(lt_season=Season-Draft) %>%
+    filter(Draft<Season, !is.na(lt_season))
 
 
 ws_lt <- dat %>%
@@ -29,7 +30,7 @@ ws_lt <- dat %>%
     scale_x_continuous(breaks=1:16) +
     scale_fill_gradient(low="blue", high="red", name="Win Shares") +
     theme_minimal() +
-    ggtitle("Draft Win Shares by Year in League")
+    ggtitle("Plot 1: Draft Win Shares by Year in League")
 
 ws_cum_lt <- dat %>%
     group_by(Draft, lt_season) %>%
@@ -46,7 +47,7 @@ ws_cum_lt <- dat %>%
     scale_x_continuous(breaks=1:16) +
     scale_fill_gradient(low="blue", high="red", name="Cumulative\nWin Shares") +
     theme_minimal() +
-    ggtitle("Draft Cumulative Win Shares by Year in League")
+    ggtitle("Plot 3: Cumulative Draft Win Shares by Year in League Heatmap")
 
 ws_season <- dat %>%
     group_by(Draft, Season) %>%
@@ -64,4 +65,42 @@ ws_season <- dat %>%
     theme_minimal() +
     ggtitle("Draft Win Shares by Season")
 
+
+ws_cum_line <- dat %>%
+    group_by(Draft, lt_season) %>%
+    summarize(ws=sum(WS)) %>%
+    mutate(ws=cumsum(ws)) %>%
+    ungroup() %>%
+    mutate(Draft=as.character(Draft)) %>%
+    ggplot(aes(x=lt_season, y=ws, color=Draft)) +
+    geom_line() +
+    xlab("Year in League") +
+    ylab("Win Shares") +
+    scale_x_continuous(breaks=1:16) +
+    theme_minimal() +
+    ggtitle(" Plot 4: Cumulative Draft Win Shares by Year in League Line")
+
+ws_lt_line <- dat %>%
+    group_by(Draft, lt_season) %>%
+    summarize(ws=sum(WS)) %>%
+    ungroup() %>%
+    mutate(Draft=as.character(Draft)) %>%
+    ggplot(aes(x=lt_season, y=ws, color=Draft)) +
+    geom_line() +
+    xlab("Year in League") +
+    ylab("Win Shares") +
+    scale_x_continuous(breaks=1:16) +
+    theme_minimal() +
+    ggtitle("Plot 2: Draft Win Shares by Year in League Line")
+
+ws_lt_smooth <- dat %>%
+    group_by(lt_season) %>%
+    summarize(ws=sum(WS)) %>%
+    ggplot(aes(x=lt_season, y=ws)) +
+    geom_smooth() +
+    xlab("Year in League") +
+    ylab("Win Shares") +
+    scale_x_continuous(breaks=1:16) +
+    theme_minimal() +
+    ggtitle("Draft Win Shares by Year in League (Smoothed)")
 
